@@ -11,6 +11,7 @@ cache:
 branches:
   except:
     - gh-pages
+    - fixture
 
 notifications:
   email:
