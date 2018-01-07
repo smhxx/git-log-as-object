@@ -1,0 +1,4 @@
+[submodule "spec/fixtures/mock-project"]
+	path = spec/fixtures/mock-project
+	url = https://github.com/smhxx/git-log-as-object
+	branch = fixture
