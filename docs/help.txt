@@ -1,0 +1,27 @@
+
+NAME
+    git-log-as-object(1) - print git commit log in JSON format
+
+SYNOPSIS
+    git-log-as-object [-s startRef] [-e endRef] [directory]
+    git-log-as-object --help
+
+DESCRIPTION
+    Prints out a JSON-formatted log of commit metadata for a local git
+    repository.
+
+OPTIONS
+    -s startRef
+        A reference string, such as a commit hash or tag name, which designates
+        the beginning of the range (exclusive.) If not defined, all ancestors
+        of endRef will be listed.
+    -e endRef
+        A reference string, such as a commit hash or tag name, which designates
+        the end of the range (inclusive.) If not defined, endRef will be
+        assumed to be 'HEAD'.
+    directory
+        The path to the root directory of a git repository. Defaults to the
+        current working directory.
+
+AUTHOR
+    smhxx <captaintrek@gmail.com> - https://github.com/smhxx

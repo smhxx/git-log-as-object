@@ -1,0 +1,33 @@
+sudo: false
+dist: trusty
+language: node_js
+node_js:
+  - node
+
+cache:
+  directories:
+    - node_modules
+
+branches:
+  except:
+    - gh-pages
+
+notifications:
+  email:
+    on_success: change
+    on_failure: always
+
+before_install:
+  - npm install -g codecov greenkeeper-lockfile
+
+before_script:
+  - greenkeeper-lockfile-update
+
+script:
+  - npm run lintdir -- lib
+  - npm run lintdir -- spec
+  - npm run coverage
+
+after_script:
+  - codecov
+  - greenkeeper-lockfile-upload

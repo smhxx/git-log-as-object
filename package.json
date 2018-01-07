@@ -1,0 +1,61 @@
+{
+  "name": "git-log-as-object",
+  "version": "0.1.0",
+  "description": "Fetch the history for any commit range as a JavaScript object",
+  "author": "smhxx <captaintrek@gmail.com>",
+  "main": "dist/index.js",
+  "keywords": [
+    "git",
+    "log",
+    "commit",
+    "history",
+    "json",
+    "object"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/smhxx/git-log-as-object.git"
+  },
+  "scripts": {
+    "build": "tsc -p lib/tsconfig.json",
+    "coverage": "jest --coverage --colors",
+    "lintdir": "tslint -p",
+    "prepublishOnly": "npm run build",
+    "test": "jest --colors"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jest": "^22.0.0",
+    "@types/node": "^8.0.31",
+    "jest": "^22.0.1",
+    "ts-jest": "^22.0.0",
+    "tslint": "^5.7.0",
+    "tslint-config-airbnb": "^5.3.0",
+    "typescript": "^2.5.3"
+  },
+  "license": "MIT",
+  "jest": {
+    "globals": {
+      "ts-jest": {
+        "tsConfigFile": "lib/tsconfig.json",
+        "skipBabel": true
+      }
+    },
+    "transform": {
+      "^.+\\.tsx?$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "mapCoverage": true,
+    "collectCoverageFrom": [
+      "lib/**/*.{js,jsx,ts,tsx}",
+      "!lib/**/*.d.{ts,tsx}"
+    ],
+    "testRegex": "(/(?:spec|test)/(?!fixtures?/)(?:.*/)*.*[.-](?:spec|test))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json"
+    ]
+  }
+}

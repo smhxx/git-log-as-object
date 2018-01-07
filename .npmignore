@@ -1,0 +1,11 @@
+/.git
+/.github
+/coverage
+/node_modules
+/spec
+/lib
+/.editorconfig
+/.gitattributes
+/.gitignore
+/.travis.yml
+/tslint.json
