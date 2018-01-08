@@ -25,7 +25,7 @@ before_script:
   - greenkeeper-lockfile-update
 
 script:
-  - npm run lintdir -- lib
+  - npm run lintdir -- src
   - npm run lintdir -- spec
   - npm run coverage
 

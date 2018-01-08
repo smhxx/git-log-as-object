@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
-import { Commit, gitLog, gitLogSync } from '../lib';
+import { Commit, gitLog, gitLogSync } from '../src';
 
 const history: Commit[] =
   JSON.parse(readFileSync('./spec/fixtures/mock-project.json').toString());
