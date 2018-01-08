@@ -37,12 +37,7 @@ const gitLogArgs = (range: string) =>
  */
 // tslint:disable-next-line max-line-length
 export function gitLog(dir: string = process.cwd(), startRef?: string, endRef?: string): Promise<Commit[]> {
-  let rangeString;
-  try {
-    rangeString = getRangeString(startRef, endRef);
-  } catch (err) {
-    return Promise.reject(err);
-  }
+  const rangeString = getRangeString(startRef, endRef);
 
   return wrapProcess('git', gitLogArgs(rangeString), dir).then(d => parseData(d));
 }
