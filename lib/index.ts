@@ -1,4 +1,3 @@
-import { EOL } from 'os';
 import { spawn, spawnSync } from 'child_process';
 
 /**
@@ -23,6 +22,10 @@ export interface Commit {
   body: string;
 }
 
+const gitLogArgs = (range: string) =>
+  // tslint:disable-next-line max-line-length
+  ['log', range, '--format=\x1F%H\x1F%h\x1F%an\x1F%ae\x1F%at\x1F%cn\x1F%ce\x1F%ct\x1F%s\x1F%b\x1F\x1E'];
+
 /**
  *  Asynchronously fetches the metadata of all commits within a particular reference range.
  *  @param dir The path to the root directory of a git repository.
@@ -35,20 +38,13 @@ export interface Commit {
 // tslint:disable-next-line max-line-length
 export function gitLog(dir: string = process.cwd(), startRef?: string, endRef?: string): Promise<Commit[]> {
   let rangeString;
-  let commitCount;
   try {
     rangeString = getRangeString(startRef, endRef);
-    commitCount = getRevisionCount(dir, rangeString);
   } catch (err) {
     return Promise.reject(err);
   }
 
-  const promises = [] as Promise<Commit>[];
-  for (let i = 0; i < commitCount; i += 1) {
-    promises[i] = getCommit(dir, rangeString, i);
-  }
-
-  return Promise.all(promises);
+  return wrapProcess('git', gitLogArgs(rangeString), dir).then(d => parseData(d));
 }
 
 /**
@@ -63,14 +59,14 @@ export function gitLog(dir: string = process.cwd(), startRef?: string, endRef?: 
 // tslint:disable-next-line max-line-length
 export function gitLogSync(dir: string = process.cwd(), startRef?: string, endRef?: string): Commit[] {
   const rangeString = getRangeString(startRef, endRef);
-  const commitCount = getRevisionCount(dir, rangeString);
 
-  const commits = [] as Commit[];
-  for (let i = 0; i < commitCount; i += 1) {
-    commits[i] = getCommitSync(dir, rangeString, i);
+  const child = spawnSync('git', gitLogArgs(rangeString), { cwd: dir });
+
+  if (child.status !== 0) {
+    throw getErrorWithCode(child.status, child.stderr.toString());
   }
 
-  return commits;
+  return parseData(child.stdout.toString());
 }
 
 function getRangeString(startRef?: string, endRef: string = 'HEAD'): string {
@@ -80,79 +76,53 @@ function getRangeString(startRef?: string, endRef: string = 'HEAD'): string {
   return endRef;
 }
 
-function getRevisionCount(dir: string, range: string): number {
-  const child = spawnSync('git', ['rev-list', '--count', range], { cwd: dir });
-  if (child.status !== 0) {
-    if (child.error !== undefined) {
-      // tslint:disable-next-line max-line-length
-      throw new Error(`Unable to perform revision count on range '${range}' (git rev-list exited with ${child.status}). The error encountered was:\n\n${child.error.message}`);
-    } else {
-      // tslint:disable-next-line max-line-length
-      throw new Error(`Unable to perform revision count on range '${range}' (git rev-list exited with ${child.status}). The error encountered was:\n\n${child.stderr.toString()}`);
-    }
-  }
-  return parseInt(child.stdout.toString(), 10);
-}
-
-const metadataFormat = '%H%n%h%n%an%n%ae%n%at%n%cn%n%ce%n%ct%n%s%n';
-const bodyFormat = '%b';
-const gitLogArgs = (range: string, offset: number, format: string) =>
-  ['log', range, '-n', '1', `--skip=${offset}`, `--format=${format}`];
-
-async function getCommit(dir: string, range: string, offset: number): Promise<Commit> {
-  const logOutput = await Promise.all([
-    wrapProcess(gitLogArgs(range, offset, metadataFormat), dir),
-    wrapProcess(gitLogArgs(range, offset, bodyFormat), dir),
-  ]);
-
-  return createCommitObject(logOutput[0], logOutput[1]);
-}
-
-function getCommitSync(dir: string, range: string, offset: number): Commit {
-  const logData = spawnSync('git', gitLogArgs(range, offset, metadataFormat), { cwd: dir });
-  const logBody = spawnSync('git', gitLogArgs(range, offset, bodyFormat), { cwd: dir });
-
-  return createCommitObject(logData.stdout.toString(), logBody.stdout.toString());
-}
-
-function createCommitObject(metadata: string, rawBody: string): Commit {
-  const data = metadata.split('\n');
-  const body = rawBody.substr(0, rawBody.length - EOL.length);
-
-  return {
-    body,
-    fullHash: data[0],
-    partialHash: data[1],
-    author: {
-      name: data[2],
-      email: data[3],
-    },
-    authorTime: new Date(parseInt(data[4], 10) * 1000),
-    committer: {
-      name: data[5],
-      email: data[6],
-    },
-    commitTime: new Date(parseInt(data[7], 10) * 1000),
-    subject: data[8],
-  };
-}
-
-function wrapProcess(args: string[], dir: string) {
+function wrapProcess(cmd: string, args: string[], dir: string) {
   return new Promise<string>((resolve, reject) => {
-    const child = spawn('git', args, { cwd: dir });
+    const child = spawn(cmd, args, { cwd: dir });
     let stdout = new Buffer('');
     let stderr = new Buffer('');
     child.stdout.on('data', data => stdout = Buffer.concat([stdout, data as Buffer]));
     child.stderr.on('data', data => stderr = Buffer.concat([stderr, data as Buffer]));
     child.once('exit', (code: number) => {
       if (code !== 0 || stderr.toString() !== '') {
-        type ErrorWithCode = Error & { code: number };
-        const err = new Error(stderr.toString()) as ErrorWithCode;
-        err.code = code;
-        reject(err);
+        reject(getErrorWithCode(code, stderr.toString()));
       } else {
         resolve(stdout.toString());
       }
     });
   });
+}
+
+function parseData(rawData: string): Commit[] {
+  const commits: Commit[] = [];
+  const commitData = rawData.split('\x1E');
+
+  for (let i = 0; i < commitData.length - 1; i += 1) {
+    const entries = commitData[i].split('\x1F');
+    commits[i] = {
+      fullHash: entries[1],
+      partialHash: entries[2],
+      author: {
+        name: entries[3],
+        email: entries[4],
+      },
+      authorTime: new Date(parseInt(entries[5], 10) * 1000),
+      committer: {
+        name: entries[6],
+        email: entries[7],
+      },
+      commitTime: new Date(parseInt(entries[8], 10) * 1000),
+      subject: entries[9],
+      body: entries[10],
+    };
+  }
+
+  return commits;
+}
+
+function getErrorWithCode(code: number, message: string) {
+  type ErrorWithCode = Error & { code: number };
+  const err = new Error(message) as ErrorWithCode;
+  err.code = code;
+  return err;
 }
