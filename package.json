@@ -18,10 +18,10 @@
   },
   "scripts": {
     "build": "tsc -p lib/tsconfig.json",
-    "coverage": "jest --coverage --colors",
+    "coverage": "jest --coverage --colors --runInBand",
     "lintdir": "tslint -p",
     "prepublishOnly": "npm run build",
-    "test": "jest --colors"
+    "test": "jest --colors --runInBand"
   },
   "dependencies": {},
   "devDependencies": {
