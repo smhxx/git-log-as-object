@@ -7,7 +7,7 @@
     "declaration": true,
     "module": "commonjs",
     "moduleResolution": "node",
-    "outDir": "../dist",
+    "outDir": "../lib",
     "strict": true,
     "newLine": "lf",
     "noUnusedLocals": true,
