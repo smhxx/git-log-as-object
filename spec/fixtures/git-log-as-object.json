@@ -1,0 +1,66 @@
+[
+  {
+    "author":{
+      "email": "captaintrek@gmail.com",
+      "name": "smhxx"
+    },
+    "authorTime": "2018-01-07T23:24:28.000Z",
+    "body": "",
+    "commitTime": "2018-01-07T23:24:28.000Z",
+    "committer":{
+      "email": "captaintrek@gmail.com",
+      "name": "smhxx"
+    },
+    "fullHash": "b5f87d10d6002a037646c31489b3eb67b22aa806",
+    "partialHash": "b5f87d1",
+    "subject": "chore(fixtures): update JSON git history fixture"
+  },
+  {
+    "author":{
+      "email": "captaintrek@gmail.com",
+      "name": "smhxx"
+    },
+    "authorTime": "2018-01-07T23:12:31.000Z",
+    "body": "",
+    "commitTime": "2018-01-07T23:12:31.000Z",
+    "committer":{
+      "email": "captaintrek@gmail.com",
+      "name": "smhxx"
+    },
+    "fullHash": "e5650f2da9236cfce83a3f140eef6e535fda6250",
+    "partialHash": "e5650f2",
+    "subject": "chore(travis): don't run on fixture branch"
+  },
+  {
+    "author":{
+      "email": "captaintrek@gmail.com",
+      "name": "smhxx"
+    },
+    "authorTime": "2018-01-07T23:11:10.000Z",
+    "body": "",
+    "commitTime": "2018-01-07T23:11:10.000Z",
+    "committer":{
+      "email": "captaintrek@gmail.com",
+      "name": "smhxx"
+    },
+    "fullHash": "d2eafbb05c78ed8608b53b45af85d876477a06ce",
+    "partialHash": "d2eafbb",
+    "subject": "chore(fixtures): convert mock-project dir to submodule"
+  },
+  {
+    "author":{
+      "email": "captaintrek@gmail.com",
+      "name": "smhxx"
+    },
+    "authorTime": "2018-01-07T22:09:00.000Z",
+    "body": "",
+    "commitTime": "2018-01-07T22:09:00.000Z",
+    "committer":{
+      "email": "captaintrek@gmail.com",
+      "name": "smhxx"
+    },
+    "fullHash": "e3163fcb1c792b494bdd677787382af89451f037",
+    "partialHash": "e3163fc",
+    "subject": "Initial commit"
+  }
+]

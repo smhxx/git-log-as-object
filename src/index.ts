@@ -36,7 +36,7 @@ const gitLogArgs = (range: string) =>
  *  @return A Promise for an array of objects containing the metadata of each commit in the range.
  */
 // tslint:disable-next-line max-line-length
-export function gitLog(dir: string = process.cwd(), startRef?: string, endRef?: string): Promise<Commit[]> {
+export function gitLog(dir?: string, startRef?: string, endRef?: string): Promise<Commit[]> {
   const rangeString = getRangeString(startRef, endRef);
 
   return wrapProcess('git', gitLogArgs(rangeString), dir).then(d => parseData(d));
@@ -52,7 +52,7 @@ export function gitLog(dir: string = process.cwd(), startRef?: string, endRef?: 
  *  @return An array of objects containing the metadata of each commit in the range.
  */
 // tslint:disable-next-line max-line-length
-export function gitLogSync(dir: string = process.cwd(), startRef?: string, endRef?: string): Commit[] {
+export function gitLogSync(dir?: string, startRef?: string, endRef?: string): Commit[] {
   const rangeString = getRangeString(startRef, endRef);
 
   const child = spawnSync('git', gitLogArgs(rangeString), { cwd: dir });
@@ -71,7 +71,7 @@ function getRangeString(startRef?: string, endRef: string = 'HEAD'): string {
   return endRef;
 }
 
-function wrapProcess(cmd: string, args: string[], dir: string) {
+function wrapProcess(cmd: string, args: string[], dir?: string) {
   return new Promise<string>((resolve, reject) => {
     const child = spawn(cmd, args, { cwd: dir });
     let stdout = new Buffer('');
