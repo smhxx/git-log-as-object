@@ -78,7 +78,7 @@ function wrapProcess(cmd: string, args: string[], dir: string) {
     let stderr = new Buffer('');
     child.stdout.on('data', data => stdout = Buffer.concat([stdout, data as Buffer]));
     child.stderr.on('data', data => stderr = Buffer.concat([stderr, data as Buffer]));
-    child.once('exit', (code: number) => {
+    child.once('close', (code: number) => {
       if (code !== 0 || stderr.toString() !== '') {
         reject(getErrorWithCode(code, stderr.toString()));
       } else {
