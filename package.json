@@ -47,8 +47,7 @@
     },
     "mapCoverage": true,
     "collectCoverageFrom": [
-      "lib/**/*.{js,jsx,ts,tsx}",
-      "!lib/**/*.d.{ts,tsx}"
+      "src/**/*.{js,jsx,ts,tsx}"
     ],
     "testRegex": "(/(?:spec|test)/(?!fixtures?/)(?:.*/)*.*[.-](?:spec|test))\\.(jsx?|tsx?)$",
     "moduleFileExtensions": [
