@@ -2,7 +2,8 @@
 [![Version](https://img.shields.io/npm/v/git-log-as-object.svg)](https://www.npmjs.com/package/git-log-as-object)
 [![Downloads](https://img.shields.io/npm/dt/git-log-as-object.svg)](https://www.npmjs.com/package/git-log-as-object)
 [![CodeCov](https://codecov.io/gh/smhxx/git-log-as-object/branch/master/graph/badge.svg)](https://codecov.io/gh/smhxx/git-log-as-object)
-[![Greenkeeper](https://badges.greenkeeper.io/smhxx/git-log-as-object.svg)](https://greenkeeper.io/)
+[![Dependencies](https://david-dm.org/smhxx/git-log-as-object/status.svg)](https://david-dm.org/smhxx/git-log-as-object)
+[![DevDependencies](https://david-dm.org/smhxx/git-log-as-object/dev-status.svg)](https://david-dm.org/smhxx/git-log-as-object?type=dev)
 # git-log-as-object
 
 The `git-log-as-object` module allows for the asynchronous gathering of commit metadata for any range of commits within a local git repository.
