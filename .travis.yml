@@ -4,10 +4,6 @@ language: node_js
 node_js:
   - node
 
-env:
-  global:
-    - secure: KuRz8IvqQ6x5mutmiNv9BpYh+VGfgLqtxHj3VxLtx2yqHwe8XCnOFtXPBstTwwSw3DNJItg2mrTuRFRrkuPV0mUbCJnc7r8H5yHkwEmpc+Bc8NOvSDy6np5oFD8grZYEbxOz8Ve1v8SpoCVZ/FV+0Daa6W2J2Qw/Lv4vC8FBwOkqkA2LQqrznmbIvdif4H/m9kfDzGDbdPR+lOvHwgGnIo+P8fh0jkDSq68c6OSviSED2+8I847NQK06AH2UoSwEXcPK/hmhYCCbmDULfzjp/WWUtzxD+mnr0xyE76xz1Ik/exPbe/wD8kbwZAM6n3+4u/APj1BexOsvk8JwjMLeiykyBDFUObaS2Rb1+eMJ5xRR/m6/ywt7a5/KT0LAQ4sRVHV6AJYzOFcrCIKfOfBwrEbQW+Vdtq/bj5VrZ8pP/9w6nwYjVK4aUg9p2xmllrPauIFlBOYcHm8tEnk9DEc/MsbXz/cJ4hLHlJKRE7n1iCV6At5x+YPeeTcq592tE9d4nM16P+nhxycJAuJb3Rv7q557zs7Vm3yP2IG4gOKNvq1vgS+/4qcN2E7P5n57uahpYAousJV2NFBwRqniiD8Bzu+RUhuSbQunj2YSyDr+QktOSQS0w41XuhuKhmpaikOBYsGaYaKnVcRn0MI6GrQjBdTuFl1/yBpXjqRjKncqad4=
-
 cache:
   directories:
     - node_modules
@@ -23,10 +19,7 @@ notifications:
     on_failure: always
 
 before_install:
-  - npm install -g codecov greenkeeper-lockfile
-
-before_script:
-  - greenkeeper-lockfile-update
+  - npm install -g codecov
 
 script:
   - npm run lintdir -- src
@@ -35,4 +28,3 @@ script:
 
 after_script:
   - codecov
-  - greenkeeper-lockfile-upload
