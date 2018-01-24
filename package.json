@@ -20,42 +20,60 @@
   "scripts": {
     "build": "tsc -p src/tsconfig.json",
     "coverage": "jest --coverage --colors",
-    "lintdir": "tslint -p",
+    "deploy": "semantic-release",
+    "lint": "tslint -p src",
+    "lintspec": "tslint -p spec",
     "prepublishOnly": "npm run build",
     "test": "jest --colors"
   },
   "dependencies": {},
   "devDependencies": {
+    "@semantic-release/git": "^2.0.2",
     "@types/jest": "^22.0.0",
     "@types/node": "^9.3.0",
     "jest": "^22.0.1",
+    "semantic-release": "^12.2.2",
     "ts-jest": "^22.0.0",
     "tslint": "^5.7.0",
     "tslint-config-airbnb": "^5.3.0",
     "typescript": "^2.5.3"
   },
   "license": "MIT",
-  "jest": {
-    "globals": {
-      "ts-jest": {
-        "tsConfigFile": "src/tsconfig.json",
-        "skipBabel": true
-      }
+  "release": {
+    "analyzeCommits": {
+      "preset": "angular",
+      "releaseRules": [
+        {
+          "breaking": true,
+          "release": "major"
+        },
+        {
+          "type": "feat",
+          "release": "minor"
+        },
+        {
+          "type": "fix",
+          "release": "patch"
+        },
+        {
+          "type": "perf",
+          "release": "patch"
+        },
+        {
+          "type": "refactor",
+          "release": "patch"
+        },
+        {
+          "type": "docs",
+          "scope": "README",
+          "release": "patch"
+        }
+      ]
     },
-    "transform": {
-      "^.+\\.tsx?$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
-    },
-    "mapCoverage": true,
-    "collectCoverageFrom": [
-      "src/**/*.{js,jsx,ts,tsx}"
-    ],
-    "testRegex": "(/(?:spec|test)/(?!fixtures?/)(?:.*/)*.*[.-](?:spec|test))\\.(jsx?|tsx?)$",
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "jsx",
-      "json"
+    "publish": [
+      "@semantic-release/npm",
+      "@semantic-release/git",
+      "@semantic-release/github"
     ]
   }
 }

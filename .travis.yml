@@ -12,19 +12,34 @@ branches:
   except:
     - gh-pages
     - fixture
+    - /^fixture-tag[0-9]+$/
 
 notifications:
   email:
     on_success: change
     on_failure: always
 
-before_install:
-  - npm install -g codecov
+stages:
+  - Unit Tests
+  - name: Deployment
+    if: branch = master
 
-script:
-  - npm run lintdir -- src
-  - npm run lintdir -- spec
-  - npm run coverage
+jobs:
+  include:
 
-after_script:
-  - codecov
+    - stage: Unit Tests
+      before_install:
+        - npm install -g codecov
+      script:
+        - npm run lint
+        - npm run lintspec
+        - npm run coverage
+      after_script:
+        - codecov
+
+    - stage: Deployment
+      env:
+        - secure: U+Yar7miAI+5jsiJvUjL+Heu1up5EFciLWihlhqCh7KpEEACGPUz2mupCReGeXWnHYlRwLwMCdAGsAv9ohJ9X4zUqsHa0IG5Uskscq9lpR24gs9kaQa85qZ7pxtPMrchgYdvun3sGY9gPFATq5MPYUMWjZWA27JuuKxRIegN2dbAv7DzuW94oMPPaxpPBYhfZLqYnQPCfyi9sjPZW4wr0js9mGfIDA4HHYNbKiYCpEdpf4C8CRLqedmRbNj1bNH2pTHVuInwuDZWHzRcd5jOFmgpN3f6lWOgeMwdG+23AzTfmwZH3jXKC/JXdomkcRzP+0yU/MjU1eUI8wPkIdO99W6g48APGQMzNgo34/tEXdDD+ipRR5h+uMtUpB+Pnday7zDGkTaIjy8ZQKW/DQta0WCFA+kdo2vGAbb4uxZUQA41SmWo1uvmZjdkxqAjqsE2a2z3MSlmn/F0F0uWHmeaZayAhcUawEgyw7qHQpPBtXj62dWIROPkUJLnbHDWWifl+BuK5hgFlcszmtyiyNjPsIpE4cHVX+lWZLVhmzKteU1rbolD0eLuJOpljFE5+w2syog5tqKy0ej+ch8DSmQd39yQ4c7Ew/yfZ01Keq0BnJNm55ksc7NWKg5Rc3DbLPfgBWNvYUHiD/w6BwhZpMAUFLVa6CNCYtPsdelOSqPlYEQ=
+        - secure: YaMoO33Jxju53DcQLeHqvtIv+t6/VRWj69ohZqrhqsgMGRFxgoYvIyjjQLMPIb+5Qe53aZ4B+gL/4bjLFpFX3rzf6ycGy67rnon6UQQjr+YoE/hKdZzHvLgVnTT/QgnJpyGj+2BwePme7d4PbFJJCExLAMkVQkYNyACC6oiEAore1NUEbWosaQi8p8KfcsWWxLAqpCYqOJ6wyg3vw/ZTyIyrdZ04bB091B7tmNW31qcqyO7aADIIzjjWmVkdHKUjxmwtCoB6vdO8+DTGzLqughgc2Jk9HP3JpNVE0Hyx+zz1wkc9MADcH++v2jHN5phPw5trcdxET0Zcmb5oSEpez+oyjvv3dDqkQ2b8gCqWocpeNywfDrvQIGEZ4NW4FVXuydLOIjPCeAm1SyShLTTkK7ZHdtPjzSp0s9cYhml6Hmua5WXWZ5ovuSEZZsseO61xCGPXXpwxeJye68dQTXYpG+fRNQ7K0TCIJpuEQb9/m+REbIiZ5y+Ej756QVCxI7o4fLkVAKLCsbWmhusjmF/HbOJzvlOsyAQe/u1aXf7hiUdKXeRpi1SAwQ8vtCJIpGK1BkqCCEBnrZyptdKKRVrsHmPzLm/HgbP/ufW8wRPxBbKN6x7APpgbq1mYydu2Qvt3jfG5EPY9riXexphOHaIHwv2CVDexdX3Z9J2EOgfW0Ao=
+      script:
+        - npm run deploy
