@@ -8,31 +8,33 @@
 
 The `git-log-as-object` module allows for the asynchronous gathering of commit metadata for any range of commits within a local git repository.
 
-## gitLog(dir?: string, startRef?: string, endRef?: string): Promise<Commit[]>
+### gitLog(dir?: string, startRef?: string, endRef?: string, includeDiff?: boolean): Promise<Commit[]>
 
 Asynchronously fetches the metadata of all commits within a particular reference range.
 
-### Parameters
+#### Parameters
 
  * **dir**: The path to the root directory of a git repository. Defaults to `process.cwd()`.
  * **startRef**: A reference string, such as a commit hash or tag name, which designates the beginning of the range (exclusive.) If not defined, all ancestors of endRef will be listed.
  * **endRef**: A reference string, such as a commit hash or tag name, which designates the end of the range (inclusive.) If not defined, endRef will be assumed to be 'HEAD'.
+ * **includeDiff**: An optional boolean which, if set to `true`, will cause a list of the files modified by each commit to be included in the output. This feature is disabled by default to avoid an unnecessary performance penalty when this information is not needed.
 
-### Return
+#### Return
 
 A Promise for an array of Commit objects containing the metadata of each commit in the range. (See *Commit Format* below.)
 
-## gitLogSync(dir?: string, startRef?: string, endRef?: string): Commit[]
+### gitLogSync(dir?: string, startRef?: string, endRef?: string, includeDiff?: boolean): Commit[]
 
 Synchronously fetches the metadata of all commits within a particular reference range.
 
-### Parameters
+#### Parameters
 
  * **dir**: The path to the root directory of a git repository. Defaults to `process.cwd()`.
  * **startRef**: A reference string, such as a commit hash or tag name, which designates the beginning of the range (exclusive.) If not defined, all ancestors of endRef will be listed.
  * **endRef**: A reference string, such as a commit hash or tag name, which designates the end of the range (inclusive.) If not defined, endRef will be assumed to be 'HEAD'.
+ * **includeDiff**: An optional boolean which, if set to `true`, will cause a list of the files modified by each commit to be included in the output. This feature is disabled by default to avoid an unnecessary performance penalty when this information is not needed.
 
-### Return
+#### Return
 
 An array of Commit objects containing the metadata of each commit in the range. (See *Commit Format* below.)
 
@@ -56,8 +58,16 @@ The Commit object provided by these functions takes the following form:
   "commitTime": // A JavaScript Date object representing the time the commit was authored
   "subject": // A single-line string containing the subject line of the commit
   "body": // A potentially multiple-line string containing the rest of the commit message
+  "diff": {
+    "added": // A Set of strings containing the relative paths of any new files added by the commit
+    "deleted": // A Set of strings containing the relative paths of any existing files deleted by the commit
+    "modified": // A Set of strings containing the relative paths of any existing files modified by the commit
+    "touched": // A Set of strings containing the relative paths of all files touched by the commit
+  }
 }
 ```
+
+Note that, unless the `includeDiff` parameter is given, the value of the "diff" property will always be `undefined`. Otherwise, it will always be an object with the four properties listed, even if the commit is empty.
 
 ## License
 
