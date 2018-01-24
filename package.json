@@ -1,6 +1,6 @@
 {
   "name": "git-log-as-object",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Fetch the history for any commit range as a JavaScript object",
   "author": "smhxx <captaintrek@gmail.com>",
   "main": "lib/index.js",
