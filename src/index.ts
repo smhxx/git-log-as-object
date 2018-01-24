@@ -92,7 +92,6 @@ export async function gitLog(
  *    for performance reasons.
  *  @return An array of objects containing the metadata of each commit in the range.
  */
-// tslint:disable-next-line max-line-length
 export function gitLogSync(
   dir: string = process.cwd(),
   startRef?: string,
