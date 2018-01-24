@@ -57,19 +57,5 @@
       "jsx",
       "json"
     ]
-  },
-  "renovate": {
-    "extends": [
-      "config:base",
-      ":preserveSemverRanges",
-      ":prNotPending"
-    ],
-    "assignees": [
-      "smhxx"
-    ],
-    "labels": [
-      "dependencies"
-    ],
-    "semanticCommitScope": "package"
   }
 }

@@ -1,0 +1,14 @@
+{
+  "extends": [
+    "config:base",
+    ":automergeBranchPush",
+    ":preserveSemverRanges",
+    ":semanticCommitScope(package)"
+  ],
+  "assignees": [
+    "smhxx"
+  ],
+  "labels": [
+    "dependencies"
+  ]
+}

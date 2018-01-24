@@ -8,4 +8,5 @@
 /.gitattributes
 /.gitignore
 /.travis.yml
+/renovate.json
 /tslint.json
