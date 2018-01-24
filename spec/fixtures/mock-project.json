@@ -4,16 +4,32 @@
       "email": "captaintrek@gmail.com",
       "name": "smhxx"
     },
-    "authorTime": "2018-01-07T22:59:19.000Z",
+    "authorTime": "2018-01-24T04:41:54.000Z",
     "body": "",
-    "commitTime": "2018-01-07T22:59:19.000Z",
+    "commitTime": "2018-01-24T08:17:08.000Z",
     "committer":{
       "email": "captaintrek@gmail.com",
       "name": "smhxx"
     },
-    "fullHash": "a06a1f56997a1e4cc2791e774394aa46478a11d8",
-    "partialHash": "a06a1f5",
-    "subject": "This is the most recent commit"
+    "fullHash": "bf27e23c95e060150a092f62ca155f9571542bbf",
+    "partialHash": "bf27e23",
+    "subject": "This commit modifies several existing files"
+  },
+  {
+    "author":{
+      "email": "captaintrek@gmail.com",
+      "name": "smhxx"
+    },
+    "authorTime": "2018-01-24T04:40:09.000Z",
+    "body": "",
+    "commitTime": "2018-01-24T08:17:08.000Z",
+    "committer":{
+      "email": "captaintrek@gmail.com",
+      "name": "smhxx"
+    },
+    "fullHash": "91772924ed5ba02932c5025960e0efa764c72225",
+    "partialHash": "9177292",
+    "subject": "This commit adds several new files"
   },
   {
     "author":{
@@ -22,13 +38,13 @@
     },
     "authorTime": "2018-01-07T22:58:40.000Z",
     "body": "",
-    "commitTime": "2018-01-07T22:59:00.000Z",
+    "commitTime": "2018-01-24T08:13:43.000Z",
     "committer":{
       "email": "captaintrek@gmail.com",
       "name": "smhxx"
     },
-    "fullHash": "f91136c3c5b85bbb7963f33d21840cd74c0e6642",
-    "partialHash": "f91136c",
+    "fullHash": "511aea48bafe655468dddeaf947e357d2858924d",
+    "partialHash": "511aea4",
     "subject": "This commit has a different author time and commit time."
   },
   {
@@ -38,13 +54,13 @@
     },
     "authorTime": "2018-01-07T22:58:21.000Z",
     "body": "",
-    "commitTime": "2018-01-07T22:58:21.000Z",
+    "commitTime": "2018-01-24T08:13:42.000Z",
     "committer":{
       "email": "captaintrek@gmail.com",
       "name": "smhxx"
     },
-    "fullHash": "014c925eff537ca9e67f08d4558719c7404c4272",
-    "partialHash": "014c925",
+    "fullHash": "3bb3f6cc560431456724e8627551eb66f551c6b7",
+    "partialHash": "3bb3f6c",
     "subject": "This commit has a different author and committer."
   },
   {
@@ -54,13 +70,13 @@
     },
     "authorTime": "2018-01-07T22:57:46.000Z",
     "body": "a\nbody\nthat\nspans\nmultiple\nlines.\n",
-    "commitTime": "2018-01-07T22:57:46.000Z",
+    "commitTime": "2018-01-24T08:13:42.000Z",
     "committer":{
       "email": "captaintrek@gmail.com",
       "name": "smhxx"
     },
-    "fullHash": "d6d8375b5535590721ffd311bef5721c85d68daa",
-    "partialHash": "d6d8375",
+    "fullHash": "c314aab378d3989bc7b994039e9808f75ab45114",
+    "partialHash": "c314aab",
     "subject": "This commit has"
   },
   {
@@ -70,13 +86,13 @@
     },
     "authorTime": "2018-01-07T22:57:35.000Z",
     "body": "",
-    "commitTime": "2018-01-07T22:57:35.000Z",
+    "commitTime": "2018-01-24T08:13:41.000Z",
     "committer":{
       "email": "captaintrek@gmail.com",
       "name": "smhxx"
     },
-    "fullHash": "0dc98bfc96c2602e0931cd127b1d934871231d4b",
-    "partialHash": "0dc98bf",
+    "fullHash": "d740f84da4f44d1fc74651c1a8bb573b54d2ba54",
+    "partialHash": "d740f84",
     "subject": "This is another commit"
   },
   {
@@ -86,30 +102,14 @@
     },
     "authorTime": "2018-01-07T22:57:13.000Z",
     "body": "",
-    "commitTime": "2018-01-07T22:57:13.000Z",
+    "commitTime": "2018-01-24T08:13:41.000Z",
     "committer":{
       "email": "captaintrek@gmail.com",
       "name": "smhxx"
     },
-    "fullHash": "ee271503db0422574cc8b3f2db591a4b37bca7d3",
-    "partialHash": "ee27150",
+    "fullHash": "5f4a969c0c88c0d066dc307212c072b2c4e3ac05",
+    "partialHash": "5f4a969",
     "subject": "This commit message has 'single' and \"double\" quotes"
-  },
-  {
-    "author":{
-      "email": "captaintrek@gmail.com",
-      "name": "smhxx"
-    },
-    "authorTime": "2018-01-07T22:55:02.000Z",
-    "body": "",
-    "commitTime": "2018-01-07T22:55:02.000Z",
-    "committer":{
-      "email": "captaintrek@gmail.com",
-      "name": "smhxx"
-    },
-    "fullHash": "23e8b12a934ecb0d3c6241fed0d4e786108331e3",
-    "partialHash": "23e8b12",
-    "subject": "Add private package.json to fixture branch"
   },
   {
     "author":{
@@ -118,13 +118,13 @@
     },
     "authorTime": "2018-01-07T22:47:30.000Z",
     "body": "",
-    "commitTime": "2018-01-07T22:47:30.000Z",
+    "commitTime": "2018-01-24T08:13:40.000Z",
     "committer":{
       "email": "captaintrek@gmail.com",
       "name": "smhxx"
     },
-    "fullHash": "7e161587366192672e53bbfb2bf4742635d95b63",
-    "partialHash": "7e16158",
+    "fullHash": "4c6567d6beb26fcdc22b974780cc55ea51eca3d8",
+    "partialHash": "4c6567d",
     "subject": "Setting up fixture branch for unit testing"
   },
   {
