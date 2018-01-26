@@ -43,7 +43,7 @@
     "sinon": "^4.1.6",
     "sinon-chai": "^2.14.0",
     "ts-node": "^4.1.0",
-    "tslint": "^5.7.0",
+    "tslint": "^5.0.0",
     "tslint-config-airbnb": "^5.3.0",
     "typescript": "^2.5.3"
   },
