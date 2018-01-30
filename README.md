@@ -8,7 +8,9 @@
 
 The `git-log-as-object` module allows for the asynchronous gathering of commit metadata for any range of commits within a local git repository.
 
-### gitLog(dir?: string, startRef?: string, endRef?: string, includeDiff?: boolean): Promise<Commit[]>
+## Usage
+
+### gitLog(dir?: string, startRef?: string, endRef?: string, includeKeys?: string[]): Promise<Commit[]>
 
 Asynchronously fetches the metadata of all commits within a particular reference range.
 
@@ -17,13 +19,13 @@ Asynchronously fetches the metadata of all commits within a particular reference
  * **dir**: The path to the root directory of a git repository. Defaults to `process.cwd()`.
  * **startRef**: A reference string, such as a commit hash or tag name, which designates the beginning of the range (exclusive.) If not defined, all ancestors of endRef will be listed.
  * **endRef**: A reference string, such as a commit hash or tag name, which designates the end of the range (inclusive.) If not defined, endRef will be assumed to be 'HEAD'.
- * **includeDiff**: An optional boolean which, if set to `true`, will cause a list of the files modified by each commit to be included in the output. This feature is disabled by default to avoid an unnecessary performance penalty when this information is not needed.
+ * **includeKeys**: An optional array of strings which, if given, specify additional properties to include in the resulting object. (See *Commit Format* section below.) Note that requesting additional properties, particularly `diff`, may impose an undesirable performance penalty; in general, only properties which will actually be used should be included.
 
 #### Return
 
 A Promise for an array of Commit objects containing the metadata of each commit in the range. (See *Commit Format* below.)
 
-### gitLogSync(dir?: string, startRef?: string, endRef?: string, includeDiff?: boolean): Commit[]
+### gitLogSync(dir?: string, startRef?: string, endRef?: string, includeKeys?: string[]): Commit[]
 
 Synchronously fetches the metadata of all commits within a particular reference range.
 
@@ -32,7 +34,7 @@ Synchronously fetches the metadata of all commits within a particular reference 
  * **dir**: The path to the root directory of a git repository. Defaults to `process.cwd()`.
  * **startRef**: A reference string, such as a commit hash or tag name, which designates the beginning of the range (exclusive.) If not defined, all ancestors of endRef will be listed.
  * **endRef**: A reference string, such as a commit hash or tag name, which designates the end of the range (inclusive.) If not defined, endRef will be assumed to be 'HEAD'.
- * **includeDiff**: An optional boolean which, if set to `true`, will cause a list of the files modified by each commit to be included in the output. This feature is disabled by default to avoid an unnecessary performance penalty when this information is not needed.
+ * **includeKeys**: An optional array of strings which, if given, specify additional properties to include in the resulting object. (See *Commit Format* section below.) Note that requesting additional properties, particularly `diff`, may impose an undesirable performance penalty; in general, only properties which will actually be used should be included.
 
 #### Return
 
@@ -40,34 +42,51 @@ An array of Commit objects containing the metadata of each commit in the range. 
 
 ## Commit Format
 
-The Commit object provided by these functions takes the following form:
+The Commit object returned by these functions has all of the properties marked as "default" below, plus any additional properties in this list whose names are passed to the `includeKeys` parameter. For more information on each of these properties, see the [`git-log` documentation][git-log].
 
-```js
-{
-  "fullHash": // The full SHA1 hash of the commit
-  "partialHash": // The abbreviated SHA1 hash of the commit
-  "author": {
-    "name": // The name provided for the commit author, before application of any mailmap
-    "email": // The e-mail address provided for the commit author, before application of any mailmap
-  },
-  "authorTime": // A JavaScript Date object representing the time the commit was authored
-  "committer": {
-    "name": // The name provided for the committer, before application of any mailmap
-    "email": // The e-mail address provided for the committer, before application of any mailmap
-  },
-  "commitTime": // A JavaScript Date object representing the time the commit was authored
-  "subject": // A single-line string containing the subject line of the commit
-  "body": // A potentially multiple-line string containing the rest of the commit message
-  "diff": {
-    "added": // A Set of strings containing the relative paths of any new files added by the commit
-    "deleted": // A Set of strings containing the relative paths of any existing files deleted by the commit
-    "modified": // A Set of strings containing the relative paths of any existing files modified by the commit
-    "touched": // A Set of strings containing the relative paths of all files touched by the commit
-  }
-}
-```
+| property            | default? | type                           | equivalent format tokens  |
+|---------------------|----------|--------------------------------|---------------------------|
+| fullHash            | yes      | string                         | `%H`                      |
+| partialHash         | yes      | string                         | `%h`                      |
+| author              | yes      | `Person` (see below)           | `%an`, `%ae`              |
+| authorTime          | yes      | [JavaScript Date Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date) | `%at`, etc. |
+| committer           | yes      | `Person` (see below)           | `%cn`, `%ce`              |
+| commitTime          | yes      | [JavaScript Date Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date) | `%ct`, etc. |
+| subject             | yes      | string                         | `%s`                      |
+| body                | yes      | string                         | `%b`                      |
+| tags                | yes      | string[]                       | `%d`/`%D` (see below)     |
+| refs                |          | string[]                       | `%d`/`%D` (see below)     |
+| diff                |          | `GitDiff` (see below)          | n/a                       |
+| fullBody            |          | string                         | `%B`                      |
+| treeHash            |          | string                         | `%T`                      |
+| partialTreeHash     |          | string                         | `%t`                      |
+| parentHashes        |          | string[]                       | `%P`                      |
+| partialParentHashes |          | string[]                       | `%p`                      |
+| notes               |          | string                         | `%N`                      |
+| gpgKey              |          | string                         | `%GK`                     |
+| gpgSigner           |          | `Person` or `null` (see below) | `%GS`                     |
+| gpgStatus           |          | string (`G`, `B`, `E`, etc...) | `%G?`                     |
 
-Note that, unless the `includeDiff` parameter is given, the value of the "diff" property will always be `undefined`. Otherwise, it will always be an object with the four properties listed, even if the commit is empty.
+### Person
+
+A `Person` object has only two properties, `name` and `email`, corresponding to the person's name and e-mail address.
+
+### GitDiff
+
+A `GitDiff` object has the following properties, each of which is a [Set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) of strings containing relative paths to files in the repository.
+
+* **added:** new files added by the commit, as well as the *destination* of files moved with `git mv`
+* **deleted:** existing files deleted by the commit, as well as the *source* of files moved with `git mv`
+* **modified:** existing files whose contents were modified by the commit
+* **touched:** all paths matching any of these three criteria
+
+### 'tags' vs. 'refs'
+
+The `tags` and `refs` properties of a `Commit` are both based on the output of `%D`, but are filtered to separate git tags from other refs (like `HEAD`, `origin/HEAD`, and branch names.) The `tags` property is included by default; if you need access to non-tag refs as well, you can specify 'refs' in the `includeKeys` parameter.
+
+### gpgSigner
+
+One important caveat if you are relying on the `gpgSigner` attribute is that it will **ONLY** be set if the signer's public key is in your GPG keyring. If the commit is signed, but the public key is unknown, or if the commit is unsigned, the `gpgSigner` attribute will always be `null`.
 
 ## License
 
@@ -80,3 +99,5 @@ The source code of this project is released under the [MIT Expat License](https:
 >*The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.*
 >
 >*THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*
+
+[git-log]: https://git-scm.com/docs/git-log

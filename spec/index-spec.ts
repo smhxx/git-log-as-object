@@ -2,7 +2,7 @@ import './helper';
 import * as child_process from 'child_process';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
-import { Commit, GitDiff, gitLog, gitLogSync } from '../src';
+import { gitLog, gitLogSync } from '../src';
 
 const history: Commit[] =
   JSON.parse(readFileSync('./spec/fixtures/mock-project.json').toString());
@@ -34,27 +34,27 @@ describe('module', () => {
 
     it('accepts a SHA1 hash as a startRef', () => {
       const promise = gitLog(dir, '4c6567d');
-      return expect(promise).to.eventually.deep.equal(history.slice(0, 7));
+      return expect(promise).to.eventually.deep.equal(history.slice(0, 8));
     });
 
     it('accepts a git tag name as a startRef', () => {
       const promise = gitLog(dir, 'fixture-tag1');
-      return expect(promise).to.eventually.deep.equal(history.slice(0, 7));
+      return expect(promise).to.eventually.deep.equal(history.slice(0, 8));
     });
 
     it('accepts a SHA1 hash as an endRef', () => {
       const promise = gitLog(dir, undefined, '511aea4');
-      return expect(promise).to.eventually.deep.equal(history.slice(2));
+      return expect(promise).to.eventually.deep.equal(history.slice(3));
     });
 
     it('accepts a git tag name as an endRef', () => {
       const promise = gitLog(dir, undefined, 'fixture-tag2');
-      return expect(promise).to.eventually.deep.equal(history.slice(2));
+      return expect(promise).to.eventually.deep.equal(history.slice(3));
     });
 
     it('accepts both a startRef and endRef simultaneously', () => {
       const promise = gitLog(dir, 'fixture-tag1', 'fixture-tag2');
-      return expect(promise).to.eventually.deep.equal(history.slice(2, 7));
+      return expect(promise).to.eventually.deep.equal(history.slice(3, 8));
     });
 
     it('rejects with an Error if an invalid ref is given', () => {
@@ -70,25 +70,25 @@ describe('module', () => {
       });
     });
 
-    it('does not spawn diff-tree processes if includeDiff is false', () => {
+    it('does not spawn diff-tree processes if diff is not requested', () => {
       const spawnSpy = spy(child_process, 'spawn');
-      return gitLog(dir, 'fixture-tag1', 'fixture-tag2', false).then(() => {
+      return gitLog(dir, 'fixture-tag1', 'fixture-tag2').then(() => {
         expect(spawnSpy).to.have.been.calledOnce;
         spawnSpy.restore();
       });
     });
 
-    it('includes the diff files of each commit if includeDiff is true', () => {
-      return gitLog(dir, '3bb3f6c', undefined, true).then((log) => {
-        expect(log).to.be.of.length(3);
+    it('includes the diff files of each commit if requested', () => {
+      return gitLog(dir, '3bb3f6c', undefined, ['diff']).then((log) => {
+        expect(log).to.be.of.length(4);
 
-        const emptyDiff = log[2].diff as GitDiff;
+        const emptyDiff = log[3].diff as GitDiff;
         expect(emptyDiff.added).to.be.empty;
         expect(emptyDiff.deleted).to.be.empty;
         expect(emptyDiff.modified).to.be.empty;
         expect(emptyDiff.touched).to.be.empty;
 
-        const nonEmptyDiff = log[0].diff as GitDiff;
+        const nonEmptyDiff = log[1].diff as GitDiff;
         expect(nonEmptyDiff.added).to.deep.equal(new Set<string>([
           'folder/moved-file',
           'new-file',
@@ -107,6 +107,60 @@ describe('module', () => {
           'moved-file',
           'new-file',
         ]));
+      });
+    });
+
+    it('omits extra information when in includeKeys parameter is not given', () => {
+      return gitLog(dir, 'fixture-tag2').then((log) => {
+        expect(log[0].refs).to.equal(undefined);
+        expect(log[0].treeHash).to.equal(undefined);
+        expect(log[0].partialTreeHash).to.equal(undefined);
+        expect(log[0].parentHashes).to.equal(undefined);
+        expect(log[0].partialParentHashes).to.equal(undefined);
+        expect(log[0].gpgKey).to.equal(undefined);
+        expect(log[0].gpgSigner).to.equal(undefined);
+        expect(log[0].gpgStatus).to.equal(undefined);
+      });
+    });
+
+    it('includes extra information when an includeKeys parameter is given', () => {
+      const keys = [
+        'refs',
+        'treeHash',
+        'partialTreeHash',
+        'parentHashes',
+        'partialParentHashes',
+        'gpgKey',
+        'gpgSigner',
+        'gpgStatus',
+      ];
+      return gitLog(dir, 'HEAD~2', 'HEAD~1', keys).then((log) => {
+        expect(log[0].refs).to.deep.equal(['']);
+        expect(log[0].treeHash).to.equal('dd60d7cdf6af37b7352431fec032d60293fc3a7b');
+        expect(log[0].partialTreeHash).to.equal('dd60d7c');
+        expect(log[0].parentHashes).to.deep.equal(['91772924ed5ba02932c5025960e0efa764c72225']);
+        expect(log[0].partialParentHashes).to.deep.equal(['9177292']);
+        expect(log[0].gpgKey).to.equal('9DE4F05CE92E5CCC');
+        expect(log[0].gpgSigner).to.be.an('object');
+        expect((log[0].gpgSigner as Person).name).to.equal('smhxx');
+        expect((log[0].gpgSigner as Person).email).to.equal('captaintrek@gmail.com');
+        expect(log[0].gpgStatus).to.be.a('string');
+        expect((log[0].gpgStatus as string).length).to.equal(1);
+      });
+    });
+
+    it('includes non-tag refs if requested', () => {
+      return gitLog(dir, 'HEAD~1', 'HEAD', ['refs']).then((log) => {
+        expect(log[0].refs).to.deep.equal(['HEAD', 'origin/fixture']);
+      });
+    });
+
+    it('gives the correct GPG metadata if the commit is unsigned', () => {
+      const keys = ['gpgKey', 'gpgSigner', 'gpgStatus'];
+      return gitLog(dir, 'HEAD~1', 'HEAD', keys).then((log) => {
+        expect(log[0].gpgKey).to.equal('');
+        expect(log[0].gpgSigner).to.equal(null);
+        expect(log[0].gpgStatus).to.equal('N');
       });
     });
 
@@ -129,27 +183,27 @@ describe('module', () => {
 
     it('accepts a SHA1 hash as a startRef', () => {
       const log = gitLogSync(dir, '4c6567d');
-      expect(log).to.deep.equal(history.slice(0, 7));
+      expect(log).to.deep.equal(history.slice(0, 8));
     });
 
     it('accepts a git tag name as a startRef', () => {
       const log = gitLogSync(dir, 'fixture-tag1');
-      expect(log).to.deep.equal(history.slice(0, 7));
+      expect(log).to.deep.equal(history.slice(0, 8));
     });
 
     it('accepts a SHA1 hash as an endRef', () => {
       const log = gitLogSync(dir, undefined, '511aea4');
-      expect(log).to.deep.equal(history.slice(2));
+      expect(log).to.deep.equal(history.slice(3));
     });
 
     it('accepts a git tag name as an endRef', () => {
       const log = gitLogSync(dir, undefined, 'fixture-tag2');
-      expect(log).to.deep.equal(history.slice(2));
+      expect(log).to.deep.equal(history.slice(3));
     });
 
     it('accepts both a startRef and endRef simultaneously', () => {
       const log = gitLogSync(dir, 'fixture-tag1', 'fixture-tag2');
-      expect(log).to.deep.equal(history.slice(2, 7));
+      expect(log).to.deep.equal(history.slice(3, 8));
     });
 
     it('throws an Error if an invalid ref is given', () => {
@@ -165,24 +219,24 @@ describe('module', () => {
       spawnSyncSpy.restore();
     });
 
-    it('does not spawn diff-tree processes if includeDiff is false', () => {
+    it('does not spawn diff-tree processes if diff is not requested', () => {
       const spawnSyncSpy = spy(child_process, 'spawnSync');
-      gitLogSync(dir, 'fixture-tag1', 'fixture-tag2', false);
+      gitLogSync(dir, 'fixture-tag1', 'fixture-tag2');
       expect(spawnSyncSpy).to.have.been.calledOnce;
       spawnSyncSpy.restore();
     });
 
-    it('includes the diff files of each commit if includeDiff is true', () => {
-      const log = gitLogSync(dir, '3bb3f6c', undefined, true);
-      expect(log).to.be.of.length(3);
+    it('includes the diff files of each commit if requested', () => {
+      const log = gitLogSync(dir, '3bb3f6c', undefined, ['diff']);
+      expect(log).to.be.of.length(4);
 
-      const emptyDiff = log[2].diff as GitDiff;
+      const emptyDiff = log[3].diff as GitDiff;
       expect(emptyDiff.added).to.be.empty;
       expect(emptyDiff.deleted).to.be.empty;
       expect(emptyDiff.modified).to.be.empty;
       expect(emptyDiff.touched).to.be.empty;
 
-      const nonEmptyDiff = log[0].diff as GitDiff;
+      const nonEmptyDiff = log[1].diff as GitDiff;
       expect(nonEmptyDiff.added).to.deep.equal(new Set<string>([
         'folder/moved-file',
         'new-file',
@@ -201,6 +255,56 @@ describe('module', () => {
         'moved-file',
         'new-file',
       ]));
+    });
+
+    it('omits extra information when in includeKeys parameter is not given', () => {
+      const log = gitLogSync(dir, 'fixture-tag2');
+      expect(log[0].refs).to.equal(undefined);
+      expect(log[0].treeHash).to.equal(undefined);
+      expect(log[0].partialTreeHash).to.equal(undefined);
+      expect(log[0].parentHashes).to.equal(undefined);
+      expect(log[0].partialParentHashes).to.equal(undefined);
+      expect(log[0].gpgKey).to.equal(undefined);
+      expect(log[0].gpgSigner).to.equal(undefined);
+      expect(log[0].gpgStatus).to.equal(undefined);
+    });
+
+    it('includes extra information when an includeKeys parameter is given', () => {
+      const keys = [
+        'refs',
+        'treeHash',
+        'partialTreeHash',
+        'parentHashes',
+        'partialParentHashes',
+        'gpgKey',
+        'gpgSigner',
+        'gpgStatus',
+      ];
+      const log = gitLogSync(dir, 'HEAD~2', 'HEAD~1', keys);
+      expect(log[0].refs).to.deep.equal(['']);
+      expect(log[0].treeHash).to.equal('dd60d7cdf6af37b7352431fec032d60293fc3a7b');
+      expect(log[0].partialTreeHash).to.equal('dd60d7c');
+      expect(log[0].parentHashes).to.deep.equal(['91772924ed5ba02932c5025960e0efa764c72225']);
+      expect(log[0].partialParentHashes).to.deep.equal(['9177292']);
+      expect(log[0].gpgKey).to.equal('9DE4F05CE92E5CCC');
+      expect(log[0].gpgSigner).to.be.an('object');
+      expect((log[0].gpgSigner as Person).name).to.equal('smhxx');
+      expect((log[0].gpgSigner as Person).email).to.equal('captaintrek@gmail.com');
+      expect(log[0].gpgStatus).to.be.a('string');
+      expect((log[0].gpgStatus as string).length).to.equal(1);
+    });
+
+    it('includes non-tag refs if requested', () => {
+      const log = gitLogSync(dir, 'HEAD~1', 'HEAD', ['refs']);
+      expect(log[0].refs).to.deep.equal(['HEAD', 'origin/fixture']);
+    });
+
+    it('gives the correct GPG metadata if the commit is unsigned', () => {
+      const keys = ['gpgKey', 'gpgSigner', 'gpgStatus'];
+      const log = gitLogSync(dir, 'HEAD~1', 'HEAD', keys);
+      expect(log[0].gpgKey).to.equal('');
+      expect(log[0].gpgSigner).to.equal(null);
+      expect(log[0].gpgStatus).to.equal('N');
     });
 
   });

@@ -29,6 +29,7 @@ jobs:
 
     - stage: Unit Tests
       before_install:
+        - gpg --import spec/fixtures/public_key.asc
         - npm install -g codecov
       script:
         - npm run lint
