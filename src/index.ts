@@ -1,6 +1,6 @@
 import { Log } from './Log';
 import { Diff } from './Diff';
-import { Commit, CommitBuilder } from './CommitBuilder';
+import { Commit, CommitBuilder, OptionalAttributes } from './CommitBuilder';
 
 export { Commit, GitDiff, Person } from './CommitBuilder';
 
@@ -20,7 +20,7 @@ export async function gitLog(
   dir: string = process.cwd(),
   startRef?: string,
   endRef?: string,
-  includeKeys?: string[],
+  includeKeys?: (keyof OptionalAttributes)[],
 ): Promise<Commit[]> {
   const { commitBuilder, includeDiff, rangeString } = prepare(startRef, endRef, includeKeys);
   const data = await Log.fetch(rangeString, commitBuilder.formatString, dir);
@@ -52,7 +52,7 @@ export function gitLogSync(
   dir: string = process.cwd(),
   startRef?: string,
   endRef?: string,
-  includeKeys?: string[],
+  includeKeys?: (keyof OptionalAttributes)[],
 ): Commit[] {
   const { commitBuilder, includeDiff, rangeString } = prepare(startRef, endRef, includeKeys);
   const data = Log.fetchSync(rangeString, commitBuilder.formatString, dir);

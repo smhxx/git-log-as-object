@@ -16,15 +16,15 @@ const buildSigner = (raw: string) => {
 
 type SimpleAttributeSource =
   { builder?: undefined, tokens: [string] };
-type BuiltAttributeSource<T extends keyof Commit> =
-  { builder: (...args: string[]) => Commit[T], tokens: string[] };
-type AttributeSource<T extends keyof Commit> =
+type BuiltAttributeSource<T extends keyof LogAttributes> =
+  { builder: (...args: string[]) => LogAttributes[T], tokens: string[] };
+type AttributeSource<T extends keyof LogAttributes> =
   SimpleAttributeSource | BuiltAttributeSource<T>;
 type AttributeSources = {
-  [T in keyof Commit]: AttributeSource<T>;
+  [T in keyof LogAttributes]: AttributeSource<T>;
 };
 
-export type Commit = {
+export type DefaultAttributes = {
   fullHash: string;
   partialHash: string;
   author: Person;
@@ -34,18 +34,25 @@ export type Commit = {
   subject: string;
   body: string;
   tags: string[];
-  refs?: string[];
-  diff?: GitDiff;
-  fullBody?: string;
-  treeHash?: string;
-  partialTreeHash?: string;
-  parentHashes?: string[];
-  partialParentHashes?: string[];
-  notes?: string;
-  gpgKey?: string;
-  gpgSigner?: Person | null;
-  gpgStatus?: string;
+
 };
+
+export type OptionalLogAttributes = {
+  refs: string[];
+  fullBody: string;
+  treeHash: string;
+  partialTreeHash: string;
+  parentHashes: string[];
+  partialParentHashes: string[];
+  gpgKey: string;
+  gpgSigner: Person | null;
+  gpgStatus: string;
+};
+
+type LogAttributes = DefaultAttributes & OptionalLogAttributes;
+
+export type OptionalAttributes = OptionalLogAttributes & { diff: GitDiff };
+export type Commit = DefaultAttributes & Partial<OptionalAttributes>;
 
 export interface GitDiff {
   added: Set<string>;
@@ -110,7 +117,8 @@ export class CommitBuilder {
 
   private *placeholderTokens(): IterableIterator<string> {
     for (const key of this.keys) {
-      for (const token of CommitBuilder.sources[key].tokens) {
+      const sources = CommitBuilder.sources as { [key: string]: AttributeSource<any> };
+      for (const token of sources[key].tokens) {
         yield token;
       }
     }
@@ -120,7 +128,8 @@ export class CommitBuilder {
     const commit = {} as Commit;
     const fields = rawData.split(UNIT_SEPARATOR).slice(1);
     for (const key of this.keys) {
-      const source = CommitBuilder.sources[key];
+      const sources = CommitBuilder.sources as { [key: string]: AttributeSource<any> };
+      const source = sources[key];
       const args = source.tokens.map(() => fields.shift() as string);
       if (source.builder !== undefined) {
         commit[key] = source.builder(...args);
