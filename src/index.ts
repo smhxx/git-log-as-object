@@ -1,28 +1,25 @@
 import { Log } from './Log';
 import { Diff } from './Diff';
-import { Commit, CommitBuilder, OptionalAttributes } from './CommitBuilder';
+import { Commit, CommitBuilder } from './CommitBuilder';
 
 export { Commit, GitDiff, Person } from './CommitBuilder';
 
+export interface Options {
+  dir?: string;
+  startRef?: string;
+  endRef?: string;
+  includeKeys?: string[];
+}
+
 /**
  *  Asynchronously fetches the metadata of all commits within a particular reference range.
- *  @param dir The path to the root directory of a git repository.
- *  @param startRef A reference string, such as a commit hash or tag name, which designates the
- *    beginning of the range (exclusive.) If not defined, all ancestors of endRef will be listed.
- *  @param endRef A reference string, such as a commit hash or tag name, which designates the end
- *    of the range (inclusive.) If not defined, endRef will be assumed to be 'HEAD'.
- *  @param includeDiff An optional boolean which, if set to true, will cause information on the
- *    files touched by each commit to also be collected. This functionality is disabled by default
- *    for performance reasons.
+ *  @param options An object containing (optionally,) the path of the repo's root directory, the
+ *    starting and ending refs of the commit range, and the names of any extra attributes to include
+ *    in the resulting report.
  *  @return A Promise for an array of objects containing the metadata of each commit in the range.
  */
-export async function gitLog(
-  dir: string = process.cwd(),
-  startRef?: string,
-  endRef?: string,
-  includeKeys?: (keyof OptionalAttributes)[],
-): Promise<Commit[]> {
-  const { commitBuilder, includeDiff, rangeString } = prepare(startRef, endRef, includeKeys);
+export async function gitLog(options?: Options): Promise<Commit[]> {
+  const { dir, commitBuilder, includeDiff, rangeString } = prepare(options);
   const data = await Log.fetch(rangeString, commitBuilder.formatString, dir);
   const log = commitBuilder.buildAll(data);
 
@@ -38,23 +35,13 @@ export async function gitLog(
 
 /**
  *  Synchronously fetches the metadata of all commits within a particular reference range.
- *  @param dir The path to the root directory of a git repository.
- *  @param startRef A reference string, such as a commit hash or tag name, which designates the
- *    beginning of the range (exclusive.) If not defined, all ancestors of endRef will be listed.
- *  @param endRef A reference string, such as a commit hash or tag name, which designates the end
- *    of the range (inclusive.) If not defined, endRef will be assumed to be 'HEAD'.
- *  @param includeDiff An optional boolean which, if set to true, will cause information on the
- *    files touched by each commit to also be collected. This functionality is disabled by default
- *    for performance reasons.
+ *  @param options An object containing (optionally,) the path of the repo's root directory, the
+ *    starting and ending refs of the commit range, and the names of any extra attributes to include
+ *    in the resulting report.
  *  @return An array of objects containing the metadata of each commit in the range.
  */
-export function gitLogSync(
-  dir: string = process.cwd(),
-  startRef?: string,
-  endRef?: string,
-  includeKeys?: (keyof OptionalAttributes)[],
-): Commit[] {
-  const { commitBuilder, includeDiff, rangeString } = prepare(startRef, endRef, includeKeys);
+export function gitLogSync(options?: Options): Commit[] {
+  const { dir, commitBuilder, includeDiff, rangeString } = prepare(options);
   const data = Log.fetchSync(rangeString, commitBuilder.formatString, dir);
   const log = commitBuilder.buildAll(data);
 
@@ -68,12 +55,13 @@ export function gitLogSync(
   return log;
 }
 
-function prepare(startRef?: string, endRef?: string, includeKeys?: string[]) {
-  const optionalKeys = new Set(includeKeys) as Set<keyof Commit>;
+function prepare(options: Options = {}) {
+  const dir = (typeof options.dir === 'string') ? options.dir : process.cwd();
+  const optionalKeys = new Set(options.includeKeys) as Set<keyof Commit>;
   const includeDiff = optionalKeys.delete('diff');
   const commitBuilder = new CommitBuilder(optionalKeys);
-  const rangeString = getRangeString(startRef, endRef);
-  return { commitBuilder, includeDiff, rangeString };
+  const rangeString = getRangeString(options.startRef, options.endRef);
+  return { dir, commitBuilder, includeDiff, rangeString };
 }
 
 function getRangeString(startRef?: string, endRef: string = 'HEAD'): string {

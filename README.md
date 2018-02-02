@@ -10,35 +10,38 @@ The `git-log-as-object` module allows for the asynchronous gathering of commit m
 
 ## Usage
 
-### gitLog(dir?: string, startRef?: string, endRef?: string, includeKeys?: string[]): Promise<Commit[]>
+### gitLog(options?: Options): Promise<Commit[]>
 
 Asynchronously fetches the metadata of all commits within a particular reference range.
 
 #### Parameters
 
- * **dir**: The path to the root directory of a git repository. Defaults to `process.cwd()`.
- * **startRef**: A reference string, such as a commit hash or tag name, which designates the beginning of the range (exclusive.) If not defined, all ancestors of endRef will be listed.
- * **endRef**: A reference string, such as a commit hash or tag name, which designates the end of the range (inclusive.) If not defined, endRef will be assumed to be 'HEAD'.
- * **includeKeys**: An optional array of strings which, if given, specify additional properties to include in the resulting object. (See *Commit Format* section below.) Note that requesting additional properties, particularly `diff`, may impose an undesirable performance penalty; in general, only properties which will actually be used should be included.
+ * **options**: An object containing optional arguments to the function. See "Options Parameter" below.
 
 #### Return
 
 A Promise for an array of Commit objects containing the metadata of each commit in the range. (See *Commit Format* below.)
 
-### gitLogSync(dir?: string, startRef?: string, endRef?: string, includeKeys?: string[]): Commit[]
+### gitLogSync(options?: Options): Commit[]
 
 Synchronously fetches the metadata of all commits within a particular reference range.
 
 #### Parameters
 
- * **dir**: The path to the root directory of a git repository. Defaults to `process.cwd()`.
- * **startRef**: A reference string, such as a commit hash or tag name, which designates the beginning of the range (exclusive.) If not defined, all ancestors of endRef will be listed.
- * **endRef**: A reference string, such as a commit hash or tag name, which designates the end of the range (inclusive.) If not defined, endRef will be assumed to be 'HEAD'.
- * **includeKeys**: An optional array of strings which, if given, specify additional properties to include in the resulting object. (See *Commit Format* section below.) Note that requesting additional properties, particularly `diff`, may impose an undesirable performance penalty; in general, only properties which will actually be used should be included.
+ * **options**: An object containing optional arguments to the function. See "Options Parameter" below.
 
 #### Return
 
 An array of Commit objects containing the metadata of each commit in the range. (See *Commit Format* below.)
+
+## Options Parameter
+
+The Options object has the following properties, all of which may be `undefined`:
+
+ * **dir**: The path to the root directory of a git repository. Defaults to `process.cwd()`.
+ * **startRef**: A reference string, such as a commit hash or tag name, which designates the beginning of the range (exclusive.) If not defined, all ancestors of endRef will be listed.
+ * **endRef**: A reference string, such as a commit hash or tag name, which designates the end of the range (inclusive.) If not defined, endRef will be assumed to be 'HEAD'.
+ * **includeKeys**: An optional array of strings which, if given, specify additional properties to include in the resulting object. (See *Commit Format* section below.) Note that requesting additional properties, particularly `diff`, may impose an undesirable performance penalty; in general, only properties which will actually be used should be included.
 
 ## Commit Format
 
