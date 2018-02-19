@@ -28,7 +28,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@semantic-release/git": "^3.0.0",
+    "@semantic-release/git": "^4.0.0",
     "@types/chai": "^4.0.0",
     "@types/chai-as-promised": "^7.0.0",
     "@types/mocha": "^2.0.0",
