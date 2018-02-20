@@ -96,9 +96,11 @@
         }
       ]
     },
+    "prepare": [
+      "@semantic-release/git"
+    ],
     "publish": [
       "@semantic-release/npm",
-      "@semantic-release/git",
       "@semantic-release/github"
     ]
   }
