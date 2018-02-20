@@ -5,7 +5,6 @@
     ":automergeMinor",
     ":automergeBranchPush",
     ":automergeRequireAllStatusChecks",
-    ":preserveSemverRanges",
     ":semanticCommitScope(package)"
   ],
   "assignees": [
