@@ -37,7 +37,7 @@
     "@types/sinon-chai": "2.7.31",
     "chai": "4.1.2",
     "chai-as-promised": "7.1.1",
-    "mocha": "5.1.1",
+    "mocha": "5.2.0",
     "nyc": "11.8.0",
     "semantic-release": "15.4.1",
     "sinon": "5.0.7",
