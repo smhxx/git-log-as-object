@@ -17,6 +17,6 @@
     "newLine": "lf",
     "removeComments": true,
     "forceConsistentCasingInFileNames": true,
-    "types": [ "mocha", "node", "../src/typings" ]
+    "types": [ "mocha", "node" ]
   }
 }
