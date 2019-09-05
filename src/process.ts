@@ -27,8 +27,8 @@ export function wrapGitProcessSync(args: string[], cwd: string): string {
   return child.stdout.toString();
 }
 
-function getErrorWithCode(code: number, message: string) {
-  type ErrorWithCode = Error & { code: number };
+function getErrorWithCode(code: number | null, message: string) {
+  type ErrorWithCode = Error & { code: number | null };
   const err = new Error(message) as ErrorWithCode;
   err.code = code;
   return err;
