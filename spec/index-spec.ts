@@ -18,12 +18,12 @@ describe('module', () => {
 
   describe('gitLog()', () => {
 
-    it('returns a promise for the git log history', () => {
+    it('returns a promise for the git log history', async () => {
       const promise = gitLog({ dir });
       return expect(promise).to.eventually.deep.equal(history);
     });
 
-    it('uses the current working directory if no dir is provided', () => {
+    it('uses the current working directory if no dir is provided', async () => {
       const cwd = resolve(dir); // Do this in advance since stubbing will break path.resolve()
       const cwdStub = stub(process, 'cwd').returns(cwd);
       const promise = gitLog();
@@ -32,37 +32,37 @@ describe('module', () => {
       });
     });
 
-    it('accepts a SHA1 hash as a startRef', () => {
+    it('accepts a SHA1 hash as a startRef', async () => {
       const promise = gitLog({ dir, startRef: '4c6567d' });
       return expect(promise).to.eventually.deep.equal(history.slice(0, 8));
     });
 
-    it('accepts a git tag name as a startRef', () => {
+    it('accepts a git tag name as a startRef', async () => {
       const promise = gitLog({ dir, startRef: 'fixture-tag1' });
       return expect(promise).to.eventually.deep.equal(history.slice(0, 8));
     });
 
-    it('accepts a SHA1 hash as an endRef', () => {
+    it('accepts a SHA1 hash as an endRef', async () => {
       const promise = gitLog({ dir, endRef: '511aea4' });
       return expect(promise).to.eventually.deep.equal(history.slice(3));
     });
 
-    it('accepts a git tag name as an endRef', () => {
+    it('accepts a git tag name as an endRef', async () => {
       const promise = gitLog({ dir, endRef: 'fixture-tag2' });
       return expect(promise).to.eventually.deep.equal(history.slice(3));
     });
 
-    it('accepts both a startRef and endRef simultaneously', () => {
+    it('accepts both a startRef and endRef simultaneously', async () => {
       const promise = gitLog({ dir, startRef: 'fixture-tag1', endRef: 'fixture-tag2' });
       return expect(promise).to.eventually.deep.equal(history.slice(3, 8));
     });
 
-    it('rejects with an Error if an invalid ref is given', () => {
+    it('rejects with an Error if an invalid ref is given', async () => {
       const promise = gitLog({ dir, startRef: 'badref' });
       return expect(promise).to.eventually.be.rejectedWith(Error);
     });
 
-    it('does not spawn diff-tree processes if includeDiff is omitted', () => {
+    it('does not spawn diff-tree processes if includeDiff is omitted', async () => {
       const spawnSpy = spy(child_process, 'spawn');
       return gitLog({ dir, startRef: 'fixture-tag1', endRef: 'fixture-tag2' }).then(() => {
         expect(spawnSpy).to.have.been.calledOnce;
@@ -70,7 +70,7 @@ describe('module', () => {
       });
     });
 
-    it('does not spawn diff-tree processes if diff is not requested', () => {
+    it('does not spawn diff-tree processes if diff is not requested', async () => {
       const spawnSpy = spy(child_process, 'spawn');
       return gitLog({ dir, startRef: 'fixture-tag1', endRef: 'fixture-tag2' }).then(() => {
         expect(spawnSpy).to.have.been.calledOnce;
@@ -78,7 +78,7 @@ describe('module', () => {
       });
     });
 
-    it('includes the diff files of each commit if requested', () => {
+    it('includes the diff files of each commit if requested', async () => {
       return gitLog({ dir, startRef: '3bb3f6c', includeKeys: ['diff'] }).then((log) => {
         expect(log).to.be.of.length(4);
 
@@ -110,7 +110,7 @@ describe('module', () => {
       });
     });
 
-    it('omits extra information when in includeKeys parameter is not given', () => {
+    it('omits extra information when in includeKeys parameter is not given', async () => {
       return gitLog({ dir, startRef: 'fixture-tag2' }).then((log) => {
         expect(log[0].refs).to.equal(undefined);
         expect(log[0].treeHash).to.equal(undefined);
@@ -123,7 +123,7 @@ describe('module', () => {
       });
     });
 
-    it('includes extra information when an includeKeys parameter is given', () => {
+    it('includes extra information when an includeKeys parameter is given', async () => {
       const includeKeys = [
         'refs',
         'fullBody',
@@ -150,7 +150,7 @@ describe('module', () => {
       });
     });
 
-    it('includes non-tag refs if requested', () => {
+    it('includes non-tag refs if requested', async () => {
       return gitLog({
         dir,
         startRef: 'HEAD~1',
@@ -161,7 +161,7 @@ describe('module', () => {
       });
     });
 
-    it('gives the correct GPG metadata if the commit is unsigned', () => {
+    it('gives the correct GPG metadata if the commit is unsigned', async () => {
       const includeKeys = ['gpgKey', 'gpgSigner', 'gpgStatus'];
       return gitLog({
         dir,
