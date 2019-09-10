@@ -1,28 +1,60 @@
 const RECORD_SEPARATOR = '\x1E';
 const UNIT_SEPARATOR = '\x1F';
 
-const buildPerson = (name: string, email: string) => ({ name, email });
-const buildDate = (epoch: string) => new Date(parseInt(epoch, 10) * 1000);
-const buildParents = (raw: string) => raw.split(' ');
-const buildTags = (raw: string) => raw.split(', ')
-  .filter(ref => ref.startsWith('tag: '))
-  .map(ref => ref.replace(/^tag: /, ''));
-const buildRefs = (raw: string) => raw.split(', ')
-  .filter(ref => !ref.startsWith('tag: '));
-const buildSigner = (raw: string) => {
-  const matches = raw.match(/^(.*?) <(.*?)>/);
-  return matches !== null ? { name: matches[1], email: matches[2] } : null;
-};
+export interface GitDiff {
+  added: Set<string>;
+  deleted: Set<string>;
+  modified: Set<string>;
+  touched: Set<string>;
+}
 
-type SimpleAttributeSource =
-  { builder?: undefined, tokens: [string] };
-type BuiltAttributeSource<T extends keyof LogAttributes> =
-  { builder: (...args: string[]) => LogAttributes[T], tokens: string[] };
-type AttributeSource<T extends keyof LogAttributes> =
-  SimpleAttributeSource | BuiltAttributeSource<T>;
-type AttributeSources = {
-  [T in keyof LogAttributes]: AttributeSource<T>;
-};
+export interface Person {
+  name: string;
+  email: string;
+}
+
+abstract class Attribute<T> {
+  public abstract readonly builder: (...args: string[]) => T;
+  public readonly tokens: string[];
+
+  public constructor(tokens: string[]) {
+    this.tokens = tokens;
+  }
+}
+
+class StringAttribute extends Attribute<string> {
+  public readonly builder = (value: string) => value;
+}
+
+class PersonAttribute extends Attribute<Person> {
+  public readonly builder = (name: string, email: string) => ({ name, email });
+}
+
+class DateAttribute extends Attribute<Date> {
+  public readonly builder = (epoch: string) => new Date(parseInt(epoch, 10) * 1000);
+}
+
+class ParentsAttribute extends Attribute<string[]> {
+  public readonly builder = (raw: string) => raw.split(' ');
+}
+
+class TagsAttribute extends Attribute<string[]> {
+  public readonly builder = (raw: string) => raw.split(', ')
+    .filter(ref => ref.startsWith('tag: '))
+    .map(ref => ref.replace(/^tag: /, ''))
+}
+
+class RefsAttribute extends Attribute<string[]> {
+  public readonly builder = (raw: string) => raw.split(', ')
+    .filter(ref => !ref.startsWith('tag: '))
+}
+
+class SignerAttribute extends Attribute<Person | null> {
+  public readonly builder = (raw: string) => {
+    const matches = raw.match(/^(.*?) <(.*?)>/);
+    return matches !== null ? { name: matches[1], email: matches[2] } : null;
+  }
+}
 
 export type DefaultAttributes = {
   fullHash: string;
@@ -34,7 +66,6 @@ export type DefaultAttributes = {
   subject: string;
   body: string;
   tags: string[];
-
 };
 
 export type OptionalLogAttributes = {
@@ -51,42 +82,34 @@ export type OptionalLogAttributes = {
 
 type LogAttributes = DefaultAttributes & OptionalLogAttributes;
 
+type AttributeSources = {
+  [T in keyof LogAttributes]: Attribute<LogAttributes[T]>
+};
+
 export type OptionalAttributes = OptionalLogAttributes & { diff: GitDiff };
 export type Commit = DefaultAttributes & Partial<OptionalAttributes>;
-
-export interface GitDiff {
-  added: Set<string>;
-  deleted: Set<string>;
-  modified: Set<string>;
-  touched: Set<string>;
-}
-
-export interface Person {
-  name: string;
-  email: string;
-}
 
 export class CommitBuilder {
 
   private static readonly sources: Readonly<AttributeSources> = {
-    fullHash: { tokens: ['%H'] },
-    partialHash: { tokens: ['%h'] },
-    author: { builder: buildPerson, tokens: ['%an', '%ae'] },
-    authorTime: { builder: buildDate, tokens: ['%at'] },
-    committer: { builder: buildPerson, tokens: ['%cn', '%ce'] },
-    commitTime: { builder: buildDate, tokens: ['%ct'] },
-    subject: { tokens: ['%s'] },
-    body: { tokens: ['%b'] },
-    tags: { builder: buildTags, tokens: ['%D'] },
-    refs: { builder: buildRefs, tokens: ['%D'] },
-    fullBody: { tokens: ['%B'] },
-    treeHash: { tokens: ['%T'] },
-    partialTreeHash: { tokens: ['%t'] },
-    parentHashes: { builder: buildParents, tokens: ['%P'] },
-    partialParentHashes: { builder: buildParents, tokens: ['%p'] },
-    gpgKey: { tokens: ['%GK'] },
-    gpgSigner: { builder: buildSigner, tokens: ['%GS'] },
-    gpgStatus: { tokens: ['%G?'] },
+    fullHash: new StringAttribute(['%H']),
+    partialHash: new StringAttribute(['%h']),
+    author: new PersonAttribute(['%an', '%ae']),
+    authorTime: new DateAttribute(['%at']),
+    committer: new PersonAttribute(['%cn', '%ce']),
+    commitTime: new DateAttribute(['%ct']),
+    subject: new StringAttribute(['%s']),
+    body: new StringAttribute(['%b']),
+    tags: new TagsAttribute(['%D']),
+    refs: new RefsAttribute(['%D']),
+    fullBody: new StringAttribute(['%B']),
+    treeHash: new StringAttribute(['%T']),
+    partialTreeHash: new StringAttribute(['%t']),
+    parentHashes: new ParentsAttribute(['%P']),
+    partialParentHashes: new ParentsAttribute(['%p']),
+    gpgKey: new StringAttribute(['%GK']),
+    gpgSigner: new SignerAttribute(['%GS']),
+    gpgStatus: new StringAttribute(['%G?']),
   };
 
   private static readonly defaultKeys: ReadonlyArray<keyof Commit> = [
@@ -117,7 +140,7 @@ export class CommitBuilder {
 
   private *placeholderTokens(): IterableIterator<string> {
     for (const key of this.keys) {
-      const sources = CommitBuilder.sources as { [key: string]: AttributeSource<any> };
+      const sources = CommitBuilder.sources as { [key: string]: Attribute<any> };
       for (const token of sources[key].tokens) {
         yield token;
       }
@@ -128,14 +151,10 @@ export class CommitBuilder {
     const commit = {} as Commit;
     const fields = rawData.split(UNIT_SEPARATOR).slice(1);
     for (const key of this.keys) {
-      const sources = CommitBuilder.sources as { [key: string]: AttributeSource<any> };
+      const sources = CommitBuilder.sources as { [key: string]: Attribute<any> };
       const source = sources[key];
       const args = source.tokens.map(() => fields.shift() as string);
-      if (source.builder !== undefined) {
-        commit[key] = source.builder(...args);
-      } else {
-        commit[key] = args[0];
-      }
+      commit[key] = source.builder(...args);
     }
     return commit;
   }
